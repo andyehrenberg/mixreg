@@ -29,7 +29,7 @@ LOG_DIR = '~/procgen_exp/rainbow'
 def main():
     """Run DQN until the environment throws an exception."""
     # Hyperparameters
-    num_envs = 64
+    num_envs = 1
     learning_rate = 2.5e-4
     gamma = 0.99
     nstep_return = 3
