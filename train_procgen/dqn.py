@@ -15,6 +15,7 @@ from baselines.common.mpi_adam_optimizer import MpiAdamOptimizer
 from baselines.common.mpi_util import sync_from_root
 
 from .data_augs import Cutout_Color, Rand_Crop
+import wandb
 
 class MpiDQN:
     def __init__(self, online_net, target_net, discount=0.99,
@@ -195,6 +196,8 @@ class MpiDQN:
         loss_buf = deque(maxlen=self.log_interval)
         n_updates = 0
 
+        wandb.init(settings=wandb.Settings(start_method="fork"), project="PER", entity="andyehrenberg")
+
         if self.data_aug != 'no_aug' and self.mpi_rank_weight > 0:
             if self.data_aug == "cutout_color":
                 self.aug_func = Cutout_Color(batch_size=batch_size)
@@ -230,13 +233,15 @@ class MpiDQN:
                     n_updates += 1
                     # logging
                     if n_updates % self.log_interval == 0:
-                        logger.logkv('misc/is_test_work', self.mpi_rank_weight == 0)
-                        logger.logkv('eprewmean', np.mean(eprew_buf))
-                        logger.logkv('eplenmean', np.mean(eplen_buf))
-                        logger.logkv('loss', np.mean(loss_buf))
-                        logger.logkv('misc/time_elapsed', time.time() - start_time)
-                        logger.logkv('misc/steps_taken', steps_taken)
-                        logger.dumpkvs()
+                        d = {"Episode Returns": np.mean(eprew_buf), "Loss", np.mean(loss_buf)}
+                        wandb.log(d, step=steps_taken)
+                        #logger.logkv('misc/is_test_work', self.mpi_rank_weight == 0)
+                        #logger.logkv('eprewmean', np.mean(eprew_buf))
+                        #logger.logkv('eplenmean', np.mean(eplen_buf))
+                        #logger.logkv('loss', np.mean(loss_buf))
+                        #logger.logkv('misc/time_elapsed', time.time() - start_time)
+                        #logger.logkv('misc/steps_taken', steps_taken)
+                        #logger.dumpkvs()
                 if steps_taken >= next_target_update:
                     next_target_update = steps_taken + target_interval
                     sess.run(self.update_target)

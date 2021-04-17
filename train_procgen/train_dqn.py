@@ -33,18 +33,18 @@ def main():
     learning_rate = 2.5e-4
     gamma = 0.99
     nstep_return = 3
-    timesteps_per_proc = 25_000_000
-    train_interval = 64
+    timesteps_per_proc = 50_000_000
+    train_interval = 4
     target_interval = 8192
     batch_size = 512
     min_buffer_size = 20000
 
     # Parse arguments
     parser = argparse.ArgumentParser(description='Process procgen training arguments.')
-    parser.add_argument('--env_name', type=str, default='coinrun')
-    parser.add_argument('--distribution_mode', type=str, default='hard',
+    parser.add_argument('--env_name', type=str, default='starpilot')
+    parser.add_argument('--distribution_mode', type=str, default='easy',
                         choices=["easy", "hard", "exploration", "memory", "extreme"])
-    parser.add_argument('--num_levels', type=int, default=0)
+    parser.add_argument('--num_levels', type=int, default=1)
     parser.add_argument('--start_level', type=int, default=0)
     parser.add_argument('--test_worker_interval', type=int, default=0)
     parser.add_argument('--run_id', type=int, default=1)
@@ -57,6 +57,7 @@ def main():
     parser.add_argument('--use_l2reg', action='store_true')
     parser.add_argument('--data_aug', type=str, default='no_aug',
                         choices=['no_aug', 'cutout_color', 'crop'])
+    parser.add_argument('--PER', action='store_true')
     args = parser.parse_args()
 
     # Setup test worker
@@ -126,14 +127,25 @@ def main():
 
     # Training
     logger.info("training")
-    dqn.train(num_steps=timesteps_per_proc,
-              player=player,
-              replay_buffer=PrioritizedReplayBuffer(500000, 0.5, 0.4, epsilon=0.1),
-              optimize_op=optimize,
-              train_interval=train_interval,
-              target_interval=target_interval,
-              batch_size=batch_size,
-              min_buffer_size=min_buffer_size)
+    if args.PER:
+        dqn.train(num_steps=timesteps_per_proc,
+                  player=player,
+                  replay_buffer=PrioritizedReplayBuffer(500000, 0.5, 0.4, epsilon=0.1),
+                  optimize_op=optimize,
+                  train_interval=train_interval,
+                  target_interval=target_interval,
+                  batch_size=batch_size,
+                  min_buffer_size=min_buffer_size)
+    else:
+        #set alpha and beta equal to 0 for uniform prioritization and no importance sampling
+        dqn.train(num_steps=timesteps_per_proc,
+                  player=player,
+                  replay_buffer=PrioritizedReplayBuffer(500000, 0, 0, epsilon=0.1),
+                  optimize_op=optimize,
+                  train_interval=train_interval,
+                  target_interval=target_interval,
+                  batch_size=batch_size,
+                  min_buffer_size=min_buffer_size)
 
 if __name__ == '__main__':
     main()
