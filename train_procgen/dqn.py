@@ -233,7 +233,7 @@ class MpiDQN:
                     n_updates += 1
                     # logging
                     if n_updates % self.log_interval == 0:
-                        d = {"Episode Returns": np.mean(eprew_buf), "Loss", np.mean(loss_buf)}
+                        d = {"Episode Returns": np.mean(eprew_buf), "Loss": np.mean(loss_buf)}
                         wandb.log(d, step=steps_taken)
                         #logger.logkv('misc/is_test_work', self.mpi_rank_weight == 0)
                         #logger.logkv('eprewmean', np.mean(eprew_buf))
