@@ -57,7 +57,7 @@ def main():
     parser.add_argument('--use_l2reg', action='store_true')
     parser.add_argument('--data_aug', type=str, default='no_aug',
                         choices=['no_aug', 'cutout_color', 'crop'])
-    parser.add_argument('--PER', action='store_true')
+    parser.add_argument('--PER', type=lambda x: bool(strtobool(x)), default=True, help='Whether to use PER')
     args = parser.parse_args()
 
     # Setup test worker
