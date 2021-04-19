@@ -23,6 +23,7 @@ from .dqn_dist import rainbow_models
 from .players import VecPlayer
 from .dqn import MpiDQN
 from .utils import REWARD_RANGE_FOR_C51
+from distutils.util import strtobool
 
 LOG_DIR = '~/procgen_exp/rainbow'
 
