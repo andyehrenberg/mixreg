@@ -30,7 +30,6 @@ LOG_DIR = '~/procgen_exp/rainbow'
 def main():
     """Run DQN until the environment throws an exception."""
     # Hyperparameters
-    num_envs = 1
     learning_rate = 2.5e-4
     gamma = 0.99
     nstep_return = 3
@@ -59,6 +58,7 @@ def main():
     parser.add_argument('--data_aug', type=str, default='no_aug',
                         choices=['no_aug', 'cutout_color', 'crop'])
     parser.add_argument('--PER', type=lambda x: bool(strtobool(x)), default=True, help='Whether to use PER')
+    parser.add_argument('--num_envs', type=int, default=64)
     args = parser.parse_args()
 
     # Setup test worker
@@ -69,6 +69,8 @@ def main():
     if test_worker_interval > 0:
         is_test_worker = comm.Get_rank() % test_worker_interval == (test_worker_interval - 1)
     mpi_rank_weight = 0 if is_test_worker else 1
+
+    num_envs = args.num_envs
 
     # Setup env specs
     if args.level_setup == "procgen":
